@@ -8,20 +8,19 @@ SEGMENTS
 END
 
 PLACEMENT
-    .data        
+    .data
          INTO  RAM;
 
     .rodata,
     .init,
     .text,
     .common
-         INTO  PSEUDO_ROM;    
+         INTO  PSEUDO_ROM;
 END
 
 ENTRIES /* keep the following unreferenced variables */
-stackSpace 
+stackSpace
 headerPtr
 END
 
 STACKSIZE 0
-

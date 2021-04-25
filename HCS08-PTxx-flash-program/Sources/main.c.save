@@ -40,7 +40,7 @@ typedef unsigned char  uint8_t;
 // This is the smallest unit of Flash that can be erased
 #define FLASH_SECTOR_SIZE      (1024) // Flash 1024 bytes size (used for stride in erase)
 #define EEPROM_SECTOR_SIZE     (256)  // EEprom 256 bytes size (used for stride in erase)
-#else                         
+#else
 #define COPCTL_ADDRESS         ((uint8_t *) NULL)
 #endif
 
@@ -75,13 +75,13 @@ typedef struct {
 #define FSTAT_OFFSET              6
 
 #define fclkdiv_FDIVLD            (1<<7)
-                                 
+
 #define FSTAT_CCIF                (1<<7)  //!< Command complete
 #define FSTAT_ACCERR              (1<<5)  //!< Access error
 #define FSTAT_FPVIOL              (1<<4)  //!< Protection violation
-#define FSTAT_MGBUSY              (1<<3)  //!< Memory controller busy 
+#define FSTAT_MGBUSY              (1<<3)  //!< Memory controller busy
 #define FSTAT_MGSTAT1             (1<<1)  //!< Command completion status
-#define FSTAT_MGSTAT0             (1<<0)  
+#define FSTAT_MGSTAT0             (1<<0)
 
 #define FSTAT_CCIF_OFF            (7)
 #define FSTAT_ACCERR_OFF          (5)
@@ -121,7 +121,7 @@ typedef struct {
 #define DO_TIMING_LOOP        (1<<8) // Counting loop to determine clock speed
 
 #define IS_COMPLETE            (1<<15)
-                             
+
 // Capability masks
 #define CAP_ERASE_BLOCK        (1<<1)
 #define CAP_ERASE_RANGE        (1<<2)
@@ -133,7 +133,7 @@ typedef struct {
 
 #define CAP_DSC_OVERLAY        (1<<11) // Indicates DSC code in pMEM overlays xRAM
 #define CAP_DATA_FIXED         (1<<12) // Indicates TargetFlashDataHeader is at fixed address
-                               
+
 #define CAP_RELOCATABLE        (1<<15) // Code is relocatable
 
 //#define ADDRESS_LINEAR (1UL<<31) // Indicate address is linear
@@ -173,12 +173,12 @@ typedef struct {
    uint32_t           address;      // 12: Linear memory address being accessed
    uint16_t           size;         // 16: Size of memory range being accessed
    const uint16_t    *data;         // 18: Ptr to data to program
-} FlashData_t;                      
+} FlashData_t;
 
 #define ERROR_CODE_OFFSET   0
 #define FLAGS_OFFSET        2
 #define CONTROLLER_OFFSET   4
- 
+
 //! Describe the flash programming code
 //!
 typedef struct {
@@ -195,11 +195,11 @@ volatile uint8_t stackSpace[STACK_SIZE];
 
 // Describes a block to be programmed & result
 FlashData_t gFlashData;
-                              
+
 void asm_entry(void);
 const FlashProgramHeader_t gFlashProgramHeader;
 
-// Used by programmer to locate flashProgramHeader 
+// Used by programmer to locate flashProgramHeader
 const FlashProgramHeader_t *const headerPtr = &gFlashProgramHeader;
 
 //! Flash programming information table
@@ -262,13 +262,13 @@ void initFlash(void) {
 
    controller->fprot  = 0xFF;  // Unprotect Flash
    controller->eeprot = 0xFF;  // Unprotect EEprom
-   
+
    // Disable Watch-dog
    watchDog = gFlashData.watchDog;
    watchDog->toval = 0xFF00;
    watchDog->cs2   = 0x00;
    watchDog->cs1   = 0x00;
-      
+
    gFlashData.flags  &= ~DO_INIT_FLASH;
 }
 
@@ -282,29 +282,29 @@ void doFlashCommand(void) {
    asm {
       // HX=FlashController
       ldhx  gFlashData:CONTROLLER_OFFSET
-      
+
       // Launch command
       lda   #FSTAT_CCIF
       sta   FSTAT_OFFSET,x
-      
+
       // Wait for command complete
    loop:
       lda   FSTAT_OFFSET,x
       and   #FSTAT_CCIF|FSTAT_ACCERR|FSTAT_FPVIOL
       beq   loop
-      
+
       // Check for errors
       bit   FSTAT_ACCERR_OFF
       beq   next1
       lda   #FLASH_ERR_PROG_ACCERR_NUM
       jmp   setErrorCode
-      
+
    next1:
       bit   FSTAT_FPVIOL_OFF
       beq   next2
       lda   #FLASH_ERR_PROG_FPVIOL_NUM
       jmp   setErrorCode
-      
+
       // All done
    next2:
       rts
@@ -315,7 +315,7 @@ void doFlashCommand(void) {
 //!
 void doFlashCommand(void) {
    uint8_t           fstat;
-      
+
    // Launch command
    gFlashData.controller->fstat = FSTAT_CCIF;
 
@@ -346,7 +346,7 @@ void massEraseFlash(void) {
 
    // Clear any existing errors
    controller->fstat   = FSTAT_ACCERR|FSTAT_FPVIOL;
-   
+
    if (((uint8_t)(addressH>>8) & (ADDRESS_EEPROM>>24)) != 0) {
       eepromFlag = EEPROM_ADDRESS_FLAG;
    }
@@ -354,7 +354,7 @@ void massEraseFlash(void) {
       eepromFlag = 0;
    }
    // Write command & address with EEPROM modifier flag
-   controller->fccobix = 0; controller->fccob.b[0] = FCMD_ERASE_FLASH_BLOCK; 
+   controller->fccobix = 0; controller->fccob.b[0] = FCMD_ERASE_FLASH_BLOCK;
                             controller->fccob.b[1] = ((uint8_t)addressH)|eepromFlag;
    controller->fccobix = 1; controller->fccob.w    = (uint16_t)gFlashData.address;
 
@@ -370,7 +370,7 @@ void programRange(void) {
    uint16_t         addressH;
    uint16_t         addressL;
    const uint16_t  *data;
-   
+
    if ((gFlashData.flags&DO_PROGRAM_RANGE) == 0) {
       return;
    }
@@ -394,7 +394,7 @@ void programRange(void) {
       // Program 1 to 2 Flash phrases (2 words)
       while (numPhrases-- > 0) {
          // Write command
-         controller->fccobix = 0; controller->fccob.b[0] = FCMD_PROGRAM_FLASH; 
+         controller->fccobix = 0; controller->fccob.b[0] = FCMD_PROGRAM_FLASH;
                                   controller->fccob.b[1] = (uint8_t)addressH;
          controller->fccobix = 1; controller->fccob.w    = addressL;
          // 1st word
@@ -415,7 +415,7 @@ void programRange(void) {
       // Program 1 to 4 EEPROM bytes
       while (numBytes-- > 0) {
          // Write command
-         controller->fccobix = 0; controller->fccob.b[0] = FCMD_PROGRAM_EEPROM; 
+         controller->fccobix = 0; controller->fccob.b[0] = FCMD_PROGRAM_EEPROM;
                                   controller->fccob.b[1] = (uint8_t)addressH;
          controller->fccobix = 1; controller->fccob.w    = addressL;
          // 1st byte
@@ -475,7 +475,7 @@ void eraseRange(void) {
    uint16_t         sectorSize;
    uint16_t         pageMask;
    uint8_t          eraseCommand;
-   
+
    if ((gFlashData.flags&DO_ERASE_RANGE) == 0) {
       return;
    }
@@ -485,7 +485,7 @@ void eraseRange(void) {
    endAddressL = addressL + (gFlashData.size-1); // Inclusive
    sectorSize  = gFlashData.sectorSize;
    pageMask    = ~(sectorSize-1U);
-   
+
    // Check for empty range
    if (gFlashData.size == 0) {
       gFlashData.flags &= ~DO_ERASE_RANGE;
@@ -493,7 +493,7 @@ void eraseRange(void) {
    }
    // Round start address to start of block (inclusive)
    addressL &= pageMask;
-   
+
    // Round end address to end of block (exclusive)
    endAddressL += sectorSize;
    endAddressL &= pageMask;
@@ -510,7 +510,7 @@ void eraseRange(void) {
    // Erase each sector
    while (addressL != endAddressL) {
       // Write command
-      controller->fccobix = 0; controller->fccob.b[0] = eraseCommand; 
+      controller->fccobix = 0; controller->fccob.b[0] = eraseCommand;
                                controller->fccob.b[1] = addressH&0xFF;
       controller->fccobix = 1; controller->fccob.w    = addressL;
       doFlashCommand();
@@ -531,7 +531,7 @@ void blankCheckRange() {
    }
    address  = (uint8_t *)gFlashData.address;
    numBytes = gFlashData.size;
-   
+
    while (numBytes>0) {
       if (*address++ != (uint8_t)-1) {
          setErrorCode(FLASH_ERR_ERASE_FAILED);
@@ -555,14 +555,14 @@ void entry(void) {
 }
 
 //! Low level entry point
-//! 
+//!
 #pragma NO_ENTRY
 #pragma NO_EXIT
 void asm_entry(void) {
    asm {
       // Disable interrupts
       sei
-      
+
       // Setup the stack
       ldhx   #@stackSpace:STACK_SIZE-1
       txs
@@ -575,7 +575,7 @@ void asm_entry(void) {
 #if TEST == 1
 // Unpaged Flash address
 static const uint8_t buffer[] = {0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xFF,0xFF,0xFF,0xFF,
-                                 0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xFF,0xFF,0xFF,0xFF}; 
+                                 0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xFF,0xFF,0xFF,0xFF};
 
 static const FlashData_t flashdataA = {
    /* flags      */ DO_INIT_FLASH|DO_ERASE_RANGE|DO_BLANK_CHECK_RANGE|DO_PROGRAM_RANGE|DO_VERIFY_RANGE,
@@ -590,7 +590,7 @@ static const FlashData_t flashdataA = {
 #elif TEST == 2
 // Paged Flash address
 static const uint8_t buffer[] = {0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xFF,0xFF,0xFF,0xFF,
-                                 0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xFF,0xFF,0xFF,0xFF}; 
+                                 0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xFF,0xFF,0xFF,0xFF};
 
 static const FlashData_t flashdataA = {
    /* flags      */ DO_INIT_FLASH|DO_ERASE_RANGE|DO_BLANK_CHECK_RANGE|DO_PROGRAM_RANGE|DO_VERIFY_RANGE,
@@ -605,7 +605,7 @@ static const FlashData_t flashdataA = {
 #elif TEST == 3
 // Paged EEPROM (or DFlash) address
 static const uint8_t buffer[] = {0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xFF,0xFF,0xFF,0xFF,
-                                 0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xFF,0xFF,0xFF,0xFF}; 
+                                 0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xFF,0xFF,0xFF,0xFF};
 
 static const FlashData_t flashdataA = {
    /* flags      */ DO_INIT_FLASH|DO_ERASE_RANGE|DO_BLANK_CHECK_RANGE|DO_PROGRAM_RANGE|DO_VERIFY_RANGE,
@@ -620,7 +620,7 @@ static const FlashData_t flashdataA = {
 #elif TEST == 4
 // Fixed EEPROM (or DFlash) address
 static const uint8_t buffer[] = {0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xFF,0xFF,0xFF,0xFF,
-                                 0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xFF,0xFF,0xFF,0xFF}; 
+                                 0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xFF,0xFF,0xFF,0xFF};
 
 static const FlashData_t flashdataA = {
    /* flags      */ DO_INIT_FLASH|DO_ERASE_RANGE|DO_BLANK_CHECK_RANGE|DO_PROGRAM_RANGE|DO_VERIFY_RANGE,
@@ -635,7 +635,7 @@ static const FlashData_t flashdataA = {
 #elif TEST == 5
 // Programming general flash
 static const uint8_t buffer[] = {0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xCC,0xDD,0xEE,0xFF,
-                                 0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xCC,0xDD,0xEE,0xFF}; 
+                                 0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xCC,0xDD,0xEE,0xFF};
 static const FlashData_t flashdataA = {
    /* flags      */ DO_INIT_FLASH|DO_ERASE_RANGE|DO_BLANK_CHECK_RANGE|DO_PROGRAM_RANGE|DO_VERIFY_RANGE,
    /* errorCode  */ 0xAA55,
@@ -685,10 +685,10 @@ static const FlashData_t flashdataD = {
 //! Dummy test program for debugging
 void testApp(void) {
    FlashProgramHeader_t *fph = (FlashProgramHeader_t*) &gFlashProgramHeader;
-   
+
    // Disable COP
    *(gFlashProgramHeader.copctlAddress) = 0;
-   
+
    fph->flashData = (FlashData_t *)&flashdataA;
    asm_entry();
 #ifdef DO_B

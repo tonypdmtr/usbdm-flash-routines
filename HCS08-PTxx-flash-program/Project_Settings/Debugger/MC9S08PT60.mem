@@ -445,5 +445,5 @@ range      0x3100 0x31FF 1 ReadWrite
 // FLASH
 range      0x3200 0xFFFF 1 ReadWrite
 
-// All reserved ranges read back 0xBABA... 
+// All reserved ranges read back 0xBABA...
 reservedchar 0xBA

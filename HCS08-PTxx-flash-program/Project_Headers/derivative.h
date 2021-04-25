@@ -11,5 +11,3 @@
 
 #define _Wait asm ( wait; )
   /*!< Macro to enter wait mode */
-
-

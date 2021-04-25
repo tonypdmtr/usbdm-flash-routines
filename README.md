@@ -1,14 +1,9 @@
 # usbdm-flash-routines
-Flash routines for USBDM programmers  
+Flash routines for USBDM programmers
 
-This repository contains project for  
+This repository contains project for
 
-Codewarrior V10.6  
-- Most projects (those for HCS08 etc)  
-
-Eclipse+USBDM for:  
-- LPC-CM0-flash-program-gcc  
-- LPC-CM3-flash-program-gcc  
+ASM8 (WAS: Codewarrior V10.6)
+- Most projects (those for HCS08 etc)
 
 Import into the appropriate software
-

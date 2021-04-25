@@ -2,7 +2,7 @@
 //
 // Description:
 //  A memory configuration file contains commands that define the legally accessible
-//  areas of memory for your specific part. 
+//  areas of memory for your specific part.
 //
 // Derivative:
 // Freescale MC9S08AC128
@@ -256,5 +256,5 @@ range      0x0000FFBD 0x0000FFBD 1 ReadWrite    // NVPROT
 reserved   0x0000FFBE 0x0000FFBE
 range      0x0000FFBF 0x0000FFBF 1 ReadWrite         // NVOPT
 
-// All reserved ranges read back 0xBABA... 
+// All reserved ranges read back 0xBABA...
 reservedchar 0xBA
