@@ -3,29 +3,30 @@
 ;
 ; HCS08-small-flash-program.abs.s19   - for small targets (for restricted RAM targets, no paging support)
 ; HCS08-default-flash-program.abs.s19 - other targets (supports usual EEPAGE/PPAGE paging)
-
+;
 ; defined on command line
 ; PAGED_ADDRESSES    - support for paged addresses (use of ppage register)
-
+;
 ; export symbols
-; XDEF infoBlock,entry,selectiveErase,massErase,program
+; XDEF infoBlock,entry,SelectiveErase,MassErase,program
 ; xref __SEG_END_SSTACK
 
 ; These error numbers are just for debugging
-FLASH_ERR_OK        equ       0
-FLASH_ERR_LOCKED    equ       1                   ; Flash is still locked
-FLASH_ERR_ILLEGAL_PARAMS equ  2                   ; Parameters illegal
-FLASH_ERR_PROG_FAILED equ     3                   ; STM - Programming operation failed - general
-FLASH_ERR_PROG_WPROT equ      4                   ; STM - Programming operation failed - write protected
-FLASH_ERR_VERIFY_FAILED equ   5                   ; Verify failed
-FLASH_ERR_ERASE_FAILED equ    6                   ; Erase or Blank Check failed
-FLASH_ERR_TRAP      equ       7                   ; Program trapped (illegal instruction/location etc.)
-FLASH_ERR_PROG_ACCERR equ     8                   ; Kinetis/CFVx - Programming operation failed - ACCERR
-FLASH_ERR_PROG_FPVIOL equ     9                   ; Kinetis/CFVx - Programming operation failed - FPVIOL
-FLASH_ERR_PROG_MGSTAT0 equ    10                  ; Kinetis - Programming operation failed - MGSTAT0
-FLASH_ERR_CLKDIV    equ       11                  ; CFVx - Clock divider not set
-FLASH_ERR_ILLEGAL_SECURITY equ 12                 ; Kinetis - Illegal value for security location
-FLASH_BUSY          equ       1<7                 ; Command complete
+                    #temp
+FLASH_ERR_OK                  next      :temp
+FLASH_ERR_LOCKED              next      :temp     ; Flash is still locked
+FLASH_ERR_ILLEGAL_PARAMS      next      :temp     ; Parameters illegal
+FLASH_ERR_PROG_FAILED         next      :temp     ; STM - Programming operation failed - general
+FLASH_ERR_PROG_WPROT          next      :temp     ; STM - Programming operation failed - write protected
+FLASH_ERR_VERIFY_FAILED       next      :temp     ; Verify failed
+FLASH_ERR_ERASE_FAILED        next      :temp     ; Erase or Blank Check failed
+FLASH_ERR_TRAP                next      :temp     ; Program trapped (illegal instruction/location etc.)
+FLASH_ERR_PROG_ACCERR         next      :temp     ; Kinetis/CFVx - Programming operation failed - ACCERR
+FLASH_ERR_PROG_FPVIOL         next      :temp     ; Kinetis/CFVx - Programming operation failed - FPVIOL
+FLASH_ERR_PROG_MGSTAT0        next      :temp     ; Kinetis - Programming operation failed - MGSTAT0
+FLASH_ERR_CLKDIV              next      :temp     ; CFVx - Clock divider not set
+FLASH_ERR_ILLEGAL_SECURITY    next      :temp     ; Kinetis - Illegal value for security location
+FLASH_BUSY                    equ       1<7       ; Command complete
 
 ; typedef struct {
 ; volatile uint8_t  fcdiv;     ; 0
@@ -65,9 +66,9 @@ OPT_WDOG_ADDRESS    equ       $20
 ; typedef struct {
 ; uint8_t  flags;
 ; uint8_t  program;
-; uint8_t  massErase;
-; uint8_t  blankCheck;
-; uint8_t  selectiveErase;
+; uint8_t  MassErase;
+; uint8_t  BlankCheck;
+; uint8_t  SelectiveErase;
 ; uint8_t  verify;
 ; } infoBlock;
 
@@ -78,7 +79,7 @@ OPTIONS             equ       OPT_SMALL_CODE|OPT_PAGED_ADDRESSES
 OPTIONS             equ       OPT_SMALL_CODE
           #endif
 infoBlock           fcb       OPTIONS
-params              fcb       program-infoBlock,massErase-infoBlock,blankCheck-infoBlock,selectiveErase-infoBlock,0
+params              fcb       program-infoBlock,MassErase-infoBlock,BlankCheck-infoBlock,SelectiveErase-infoBlock,0
           #ifdef PAGED_ADDRESSES
 reserved            ds        11-6
           #else
@@ -168,7 +169,7 @@ _2@@                bit       FSTAT_O,x           ; wait for last command to com
 ;*******************************************************************************
 ; Mass erase flash
 
-massErase           proc
+MassErase           proc
           #ifdef PAGED_ADDRESSES
                     ldhx      ppageAddress
                     lda       pageNum
@@ -205,7 +206,7 @@ Fail@@              sthx      status
 ;*******************************************************************************
 ; Blank check flash
 
-blankCheck          proc
+BlankCheck          proc
           #ifdef PAGED_ADDRESSES
                     ldhx      ppageAddress
                     lda       pageNum
@@ -230,7 +231,7 @@ Done@@              sthx      status
 ;*******************************************************************************
 ; Selective erase flash
 
-selectiveErase      proc
+SelectiveErase      proc
           #ifdef PAGED_ADDRESSES
                     ldhx      ppageAddress
                     lda       pageNum
@@ -273,7 +274,6 @@ _1@@                lda       #FSTAT_FCCF|FSTAT_FACCERR|FSTAT_FPVIOL
 
 Done@@              sthx      status
                     !bgnd
-
 #ifdef
 ;*******************************************************************************
 ; Verify flash
